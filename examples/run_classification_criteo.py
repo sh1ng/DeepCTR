@@ -3,11 +3,13 @@ from sklearn.metrics import log_loss, roc_auc_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 import numpy as np
+import os
 
 from deepctr.models import DeepFM
 from deepctr.utils import SingleFeat
 
 if __name__ == "__main__":
+
     sparse_features = ['C' + str(i) for i in range(1, 27)]
     dense_features = ['I' + str(i) for i in range(1, 14)]
 
@@ -22,12 +24,20 @@ if __name__ == "__main__":
     for item in sparse_features:
         dtypes[item] = str
 
-    data = pd.read_csv('../../arboretum_benchmark/data/dac/train.txt',
-                       sep='\t', header=None, names=names, dtype=dtypes)
+    file = '../../arboretum_benchmark/data/dac/train.txt'
+    file_pkl = "{0}.pkl".format(file)
+
+    if os.path.exists(file_pkl):
+        data = pd.read_pickle(file_pkl)
+    else:
+        data = pd.read_csv('../../arboretum_benchmark/data/dac/train.txt',
+                           sep='\t', header=None, names=names, dtype=dtypes)
 
 
-    data[sparse_features] = data[sparse_features].fillna('-1', )
-    data[dense_features] = data[dense_features].fillna(0, )
+        data[sparse_features] = data[sparse_features].fillna('-1', )
+        data[dense_features] = data[dense_features].fillna(0, )
+        data.to_pickle(file_pkl)
+
     target = ['label']
 
     # 1.Label Encoding for sparse features,and do simple Transformation for dense features
