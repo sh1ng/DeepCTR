@@ -40,7 +40,7 @@ if __name__ == "__main__":
     # 1.Label Encoding for sparse features,and do simple Transformation for dense features
     for feat in sparse_features:
         lbe = LabelEncoder()
-        data[feat] = lbe.fit_transform(data[feat])
+        data[feat] = lbe.fit_transform(data[feat]).astype(np.int32)
     mms = MinMaxScaler(feature_range=(0, 1))
     data[dense_features] = mms.fit_transform(data[dense_features]).astype(np.float32)
 
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     tensorboard = TensorBoard(log_dir="logs/DeepFM_hash")
 
     history = model.fit(train_model_input, train[target].values,
-                        batch_size=128, epochs=10, verbose=2, validation_split=0.2, callbacks=[tensorboard])
-    pred_ans = model.predict(test_model_input, batch_size=128)
+                        batch_size=64, epochs=10, verbose=2, validation_split=0.2, callbacks=[tensorboard])
+    pred_ans = model.predict(test_model_input, batch_size=64)
     print("test LogLoss", round(log_loss(test[target].values, pred_ans), 4))
     print("test AUC", round(roc_auc_score(test[target].values, pred_ans), 4))
