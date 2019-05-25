@@ -25,18 +25,13 @@ if __name__ == "__main__":
         dtypes[item] = str
 
     file = '../../arboretum_benchmark/data/dac/train.txt'
-    file_pkl = "{0}.pkl".format(file)
 
-    if os.path.exists(file_pkl):
-        data = pd.read_pickle(file_pkl)
-    else:
-        data = pd.read_csv('../../arboretum_benchmark/data/dac/train.txt',
-                           sep='\t', header=None, names=names, dtype=dtypes)
+    data = pd.read_csv(file,
+                       sep='\t', header=None, names=names, dtype=dtypes)
 
 
-        data[sparse_features] = data[sparse_features].fillna('-1', )
-        data[dense_features] = data[dense_features].fillna(0, )
-        data.to_pickle(file_pkl)
+    data[sparse_features] = data[sparse_features].fillna('-1', )
+    data[dense_features] = data[dense_features].fillna(0, )
 
     target = ['label']
 
