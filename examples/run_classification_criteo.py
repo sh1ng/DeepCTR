@@ -5,6 +5,8 @@ from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 import numpy as np
 import os
 
+from tensorflow.python.keras.callbacks import TensorBoard
+
 from deepctr.models import DeepFM
 from deepctr.utils import SingleFeat
 
@@ -40,7 +42,7 @@ if __name__ == "__main__":
         lbe = LabelEncoder()
         data[feat] = lbe.fit_transform(data[feat])
     mms = MinMaxScaler(feature_range=(0, 1))
-    data[dense_features] = mms.fit_transform(data[dense_features])
+    data[dense_features] = mms.fit_transform(data[dense_features]).astype(np.float32)
 
     # 2.count #unique features for each sparse field,and record dense feature field name
 
@@ -59,12 +61,14 @@ if __name__ == "__main__":
 
     # 4.Define Model,train,predict and evaluate
     model = DeepFM({"sparse": sparse_feature_list,
-                    "dense": dense_feature_list}, task='binary')
+                    "dense": dense_feature_list}, task='binary', embedding_size=4, dnn_hidden_units=(64, 64))
     model.compile("adam", "binary_crossentropy",
                   metrics=['binary_crossentropy'], )
 
+    tensorboard = TensorBoard(log_dir="logs/DeepFM_hash")
+
     history = model.fit(train_model_input, train[target].values,
-                        batch_size=256, epochs=10, verbose=2, validation_split=0.2, )
-    pred_ans = model.predict(test_model_input, batch_size=256)
+                        batch_size=128, epochs=10, verbose=2, validation_split=0.2, callbacks=[tensorboard])
+    pred_ans = model.predict(test_model_input, batch_size=128)
     print("test LogLoss", round(log_loss(test[target].values, pred_ans), 4))
     print("test AUC", round(roc_auc_score(test[target].values, pred_ans), 4))

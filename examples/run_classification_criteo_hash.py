@@ -58,7 +58,7 @@ if __name__ == "__main__":
     model.compile("adam", "binary_crossentropy",
                   metrics=['binary_crossentropy'], )
 
-    tensorboard = TensorBoard(log_dir="logs/DeepFM_")
+    tensorboard = TensorBoard(log_dir="logs/DeepFM_hash")
 
     history = model.fit(train_model_input, train[target].values,
                         batch_size=256, epochs=10, verbose=2, validation_split=0.2, callbacks=[tensorboard])
