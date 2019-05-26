@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 import numpy as np
 import tensorflow as tf
-from keras.utils import multi_gpu_model
+from tensorflow.python.keras.utils import multi_gpu_model
 
 from tensorflow.python.keras.callbacks import TensorBoard
 
