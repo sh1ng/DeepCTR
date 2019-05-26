@@ -62,14 +62,14 @@ if __name__ == "__main__":
     # 4.Define Model,train,predict and evaluate
     model = DeepFM({"sparse": sparse_feature_list,
                     "dense": dense_feature_list}, task='binary', embedding_size=4, dnn_hidden_units=(64, 64))
-    parallel_model = multi_gpu_model(model, gpus=2)
-    parallel_model.compile(tf.python.keras.optimizers.Adam(1e-4), "binary_crossentropy",
+    # parallel_model = multi_gpu_model(model, gpus=2)
+    model.compile(tf.keras.optimizers.Adam(1e-4), "binary_crossentropy",
                   metrics=['binary_crossentropy'], )
 
-    tensorboard = TensorBoard(log_dir="logs/DeepFM_hash")
+    tensorboard = TensorBoard(log_dir="logs/DeepFM")
 
-    history = parallel_model.fit(train_model_input, train[target].values,
+    history = model.fit(train_model_input, train[target].values,
                         batch_size=256, epochs=10, verbose=2, validation_split=0.2, callbacks=[tensorboard])
-    pred_ans = parallel_model.predict(test_model_input, batch_size=256)
+    pred_ans = model.predict(test_model_input, batch_size=256)
     print("test LogLoss", round(log_loss(test[target].values, pred_ans), 4))
     print("test AUC", round(roc_auc_score(test[target].values, pred_ans), 4))
