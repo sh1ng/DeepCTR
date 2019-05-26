@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 import numpy as np
 import tensorflow as tf
+from keras.utils import multi_gpu_model
 
 from tensorflow.python.keras.callbacks import TensorBoard
 
@@ -30,10 +31,6 @@ if __name__ == "__main__":
 
     data = pd.read_csv(file,
                        sep='\t', header=None, names=names, dtype=dtypes)
-
-
-    data.to_pickle('data.pkl')
-
 
     data[sparse_features] = data[sparse_features].fillna('-1', )
     data[dense_features] = data[dense_features].fillna(0, )
@@ -65,13 +62,14 @@ if __name__ == "__main__":
     # 4.Define Model,train,predict and evaluate
     model = DeepFM({"sparse": sparse_feature_list,
                     "dense": dense_feature_list}, task='binary', embedding_size=4, dnn_hidden_units=(64, 64))
-    model.compile(tf.python.keras.optimizers.Adam(1e-4), "binary_crossentropy",
+    parallel_model = multi_gpu_model(model, gpus=2)
+    parallel_model.compile(tf.python.keras.optimizers.Adam(1e-4), "binary_crossentropy",
                   metrics=['binary_crossentropy'], )
 
     tensorboard = TensorBoard(log_dir="logs/DeepFM_hash")
 
-    history = model.fit(train_model_input, train[target].values,
-                        batch_size=64, epochs=10, verbose=2, validation_split=0.2, callbacks=[tensorboard])
-    pred_ans = model.predict(test_model_input, batch_size=64)
+    history = parallel_model.fit(train_model_input, train[target].values,
+                        batch_size=256, epochs=10, verbose=2, validation_split=0.2, callbacks=[tensorboard])
+    pred_ans = parallel_model.predict(test_model_input, batch_size=256)
     print("test LogLoss", round(log_loss(test[target].values, pred_ans), 4))
     print("test AUC", round(roc_auc_score(test[target].values, pred_ans), 4))
