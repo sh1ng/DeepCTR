@@ -3,7 +3,7 @@ from sklearn.metrics import log_loss, roc_auc_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 import numpy as np
-import os
+import tensorflow as tf
 
 from tensorflow.python.keras.callbacks import TensorBoard
 
@@ -30,6 +30,9 @@ if __name__ == "__main__":
 
     data = pd.read_csv(file,
                        sep='\t', header=None, names=names, dtype=dtypes)
+
+
+    data.to_pickle('data.pkl')
 
 
     data[sparse_features] = data[sparse_features].fillna('-1', )
@@ -62,7 +65,7 @@ if __name__ == "__main__":
     # 4.Define Model,train,predict and evaluate
     model = DeepFM({"sparse": sparse_feature_list,
                     "dense": dense_feature_list}, task='binary', embedding_size=4, dnn_hidden_units=(64, 64))
-    model.compile("adam", "binary_crossentropy",
+    model.compile(tf.python.keras.optimizers.Adam(1e-4), "binary_crossentropy",
                   metrics=['binary_crossentropy'], )
 
     tensorboard = TensorBoard(log_dir="logs/DeepFM_hash")
